@@ -18,9 +18,6 @@ class DotsCanvas : public QWidget
  public slots:
   void increaseScore(int value);
 
- protected:
-  void paintEvent(QPaintEvent* event);
-
  private slots:
   void timerTicked();
 
@@ -36,7 +33,16 @@ class DotsCanvas : public QWidget
   QTimer* timer;
   int timeLeft;
 
+  QVBoxLayout* layout;
   DotsGameWidget* gameWidget;
+  QPushButton* playButton;
+  QPushButton* pauseButton;
+  QPushButton* resetButton;
+  QLabel* scoreLabel;
+  QLabel* timeLabel;
+
+  static const int WIDTH = 400;
+  static const int HEIGHT = 300;
 
 };
 
