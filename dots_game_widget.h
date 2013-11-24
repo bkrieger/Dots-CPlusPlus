@@ -14,7 +14,7 @@ class DotsGameWidget : public QWidget
   DotsGameWidget(QWidget* parent);
 
   void reset();
-  void setPaused(bool isPaused);
+  void setPaused(bool p);
 
  signals:
   void needsScoreIncrease(int value);
@@ -26,8 +26,16 @@ class DotsGameWidget : public QWidget
   void mouseMoveEvent(QMouseEvent* event);
 
  private:
-
   bool isPaused;
+
+  static const int WIDTH = 400;
+  static const int HEIGHT = 400;
+  struct dot 
+  { 
+    int x;
+    int y;
+  } dot_board[6][6]; 
+  static const int BALL_RADIUS = 5;
 
 };
 
