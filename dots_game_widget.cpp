@@ -4,6 +4,7 @@
 */
 
 #include <QtGui>
+#include "dots_game_widget.h"
 
 DotsGameWidget::DotsGameWidget(QWidget* parent)
   : QWidget(parent) // This passes the constructor parameter to the superclass
@@ -15,7 +16,6 @@ void DotsGameWidget::reset()
 {
   for(int i = 0; i < 6; i++){
     for(int j = 0; j < 6; j++){
-        dot_board[i][j].hit = false;
         dot_board[i][j].x = i*BALL_RADIUS*2 + 2;
         dot_board[i][j].y = j*BALL_RADIUS*2 + 2;        
     }

@@ -27,7 +27,7 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   layout->addWidget(playButton);
 }
 
-void BreakoutCanvas::selectPlay() 
+void DotsCanvas::selectPlay() 
 {
   boardShowing = true;
   layout->removeWidget(playButton);
@@ -39,37 +39,38 @@ void BreakoutCanvas::selectPlay()
   reset();
 }
 
-void BreakoutCanvas::reset()
+void DotsCanvas::reset()
 {
   score = 0;
   isPaused = false;
   timeLeft = 60; //60seconds
-  gameWidget.reset();
+  gameWidget->reset();
 
   pauseButton->setText("Pause");
   scoreLabel->setText("Score: 0");
   timeLabel->setText("Time Remaining: 60 seconds");
 }
 
-void BreakoutCanvas::pause()
+void DotsCanvas::pause()
 {
   isPaused = !isPaused;
-  gameWidget.setPaused(isPaused);
+  gameWidget->setPaused(isPaused);
   pauseButton->setText(isPaused ? "Unpause" : "Pause");
 }
 
-void BreakoutCanvas::increaseScore(int value)
+void DotsCanvas::increaseScore(int value)
 {
   score += value;
   scoreLabel->setText("Score: "+ score);
 }
 
-void BreakoutCanvas::timerTicked()
+void DotsCanvas::timerTicked()
 {
   // this will get called every second
   timeLeft--;
-  timeLabel->setText("Time Reamining: " + timeLeft + " seconds");
+  char* output = (char*)"Time Remaining: " + timeLeft;
+  timeLabel->setText(output);
   if (timeLeft == 0) {
-    gameWidget.setPaused(true);
+    gameWidget->setPaused(true);
   }
 }

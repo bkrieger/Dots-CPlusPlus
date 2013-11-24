@@ -4,7 +4,10 @@
 #ifndef DOTS_CANVAS_H_
 #define DOTS_CANVAS_H_
 
+#include <sstream>
 #include <QtGui>
+
+using namespace std;
 
 class DotsGameWidget;
 
