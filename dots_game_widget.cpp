@@ -8,7 +8,8 @@
 
 DotsGameWidget::DotsGameWidget(QWidget* parent)
   : QWidget(parent) // This passes the constructor parameter to the superclass
-{  
+{
+  setFixedSize(WIDTH, HEIGHT);
 }
 
 
