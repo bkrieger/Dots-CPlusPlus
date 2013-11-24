@@ -17,7 +17,7 @@ DotsCanvas::DotsCanvas(QWidget* parent)
 
   setFixedSize(WIDTH, HEIGHT);
 
-  layout = new QVBoxLayout(this);
+  layout = new QGridLayout(this);
   playButton = new QPushButton("Start", this);
   pauseButton = new QPushButton("Pause", this);
   resetButton = new QPushButton("Reset", this);
@@ -25,17 +25,18 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   scoreLabel = new QLabel(this);
   timeLabel = new QLabel(this);
 
+  playButton->setFixedSize(100, 100);
+  pauseButton->setFixedSize(100, 100);
+  resetButton->setFixedSize(100, 100);
+  
+  scoreLabel->setFixedSize(100, 100);
+  timeLabel->setFixedSize(100, 100);
+
   connect(playButton, SIGNAL(clicked()), this, SLOT(selectPlay()));
   connect(pauseButton, SIGNAL(clicked()), this, SLOT(pause()));
   connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
 
-
-  layout->addWidget(playButton);
-  layout->addWidget(scoreLabel);
-  layout->addWidget(timeLabel);
-  layout->addWidget(gameWidget);
-  layout->addWidget(pauseButton);
-  layout->addWidget(resetButton);
+  layout->addWidget(playButton, 0, 0);
 
   scoreLabel->hide();
   timeLabel->hide();
@@ -50,6 +51,12 @@ void DotsCanvas::selectPlay()
 
   layout->removeWidget(playButton);
   playButton->hide();
+
+  layout->addWidget(scoreLabel, 0, 0);
+  layout->addWidget(timeLabel, 0, 1);
+  layout->addWidget(gameWidget, 1, 0, 1, 2);
+  layout->addWidget(pauseButton, 2, 0);
+  layout->addWidget(resetButton, 2, 1);
 
   scoreLabel->show();
   timeLabel->show();
@@ -88,9 +95,9 @@ void DotsCanvas::increaseScore(int value)
 void DotsCanvas::timerTicked()
 {
   // this will get called every second
-  if(!isPaused && boardShowing) {
+  if(!isPaused && boardShowing && timeLeft > 0) {
     timeLeft--;
-    timeLabel->setText(QString("Time Remaining: %1").arg(timeLeft));
+    timeLabel->setText(QString("Time Remaining: %1 seconds").arg(timeLeft));
     if (timeLeft == 0) {
       gameWidget->setPaused(true);
     }

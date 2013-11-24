@@ -35,7 +35,7 @@ class DotsCanvas : public QWidget
   QTimer* timer;
   int timeLeft;
 
-  QVBoxLayout* layout;
+  QGridLayout* layout;
   DotsGameWidget* gameWidget;
   QPushButton* playButton;
   QPushButton* pauseButton;
