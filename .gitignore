@@ -1,1 +1,6 @@
 .DS_Store
+*.app
+*.pro
+*.o
+moc_*
+Makefile

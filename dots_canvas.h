@@ -23,12 +23,11 @@ class DotsCanvas : public QWidget
 
  private slots:
   void timerTicked();
-
- private:
   void selectPlay();
   void reset();
   void pause();
 
+ private:
   bool boardShowing;
   bool isPaused;
   int score;
@@ -44,8 +43,8 @@ class DotsCanvas : public QWidget
   QLabel* scoreLabel;
   QLabel* timeLabel;
 
-  static const int WIDTH = 400;
-  static const int HEIGHT = 300;
+  static const int WIDTH = 800;
+  static const int HEIGHT = 600;
 
 };
 

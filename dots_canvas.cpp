@@ -11,31 +11,52 @@ DotsCanvas::DotsCanvas(QWidget* parent)
 {  
   timer = new QTimer(this);
   timer->setInterval(1000); // an interval of 1s to update clock
+  timer->start();
 
   connect(timer, SIGNAL(timeout()), this, SLOT(timerTicked()));
 
   setFixedSize(WIDTH, HEIGHT);
 
   layout = new QVBoxLayout(this);
-  gameWidget = new DotsGameWidget(this);
   playButton = new QPushButton("Start", this);
   pauseButton = new QPushButton("Pause", this);
   resetButton = new QPushButton("Reset", this);
+  gameWidget = new DotsGameWidget(this);
   scoreLabel = new QLabel(this);
   timeLabel = new QLabel(this);
 
-  layout->addWidget(playButton);
-}
+  connect(playButton, SIGNAL(clicked()), this, SLOT(selectPlay()));
+  connect(pauseButton, SIGNAL(clicked()), this, SLOT(pause()));
+  connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
 
-void DotsCanvas::selectPlay() 
-{
-  boardShowing = true;
-  layout->removeWidget(playButton);
+
+  layout->addWidget(playButton);
   layout->addWidget(scoreLabel);
   layout->addWidget(timeLabel);
   layout->addWidget(gameWidget);
   layout->addWidget(pauseButton);
   layout->addWidget(resetButton);
+
+  scoreLabel->hide();
+  timeLabel->hide();
+  gameWidget->hide();
+  pauseButton->hide();
+  resetButton->hide();
+}
+
+void DotsCanvas::selectPlay() 
+{
+  boardShowing = true;
+
+  layout->removeWidget(playButton);
+  playButton->hide();
+
+  scoreLabel->show();
+  timeLabel->show();
+  gameWidget->show();
+  pauseButton->show();
+  resetButton->show();
+
   reset();
 }
 
@@ -61,16 +82,17 @@ void DotsCanvas::pause()
 void DotsCanvas::increaseScore(int value)
 {
   score += value;
-  scoreLabel->setText("Score: "+ score);
+  scoreLabel->setText(QString("Score: %1").arg(score));
 }
 
 void DotsCanvas::timerTicked()
 {
   // this will get called every second
-  timeLeft--;
-  char* output = (char*)"Time Remaining: " + timeLeft;
-  timeLabel->setText(output);
-  if (timeLeft == 0) {
-    gameWidget->setPaused(true);
+  if(!isPaused && boardShowing) {
+    timeLeft--;
+    timeLabel->setText(QString("Time Remaining: %1").arg(timeLeft));
+    if (timeLeft == 0) {
+      gameWidget->setPaused(true);
+    }
   }
 }
