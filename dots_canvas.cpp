@@ -26,11 +26,11 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   timeLabel = new QLabel(this);
 
   playButton->setFixedSize(100, 100);
-  pauseButton->setFixedSize(100, 100);
-  resetButton->setFixedSize(100, 100);
-  
-  scoreLabel->setFixedSize(100, 100);
-  timeLabel->setFixedSize(100, 100);
+  pauseButton->setFixedSize(100, 50);
+  resetButton->setFixedSize(100, 50);
+
+  scoreLabel->setFixedSize(200, 100);
+  timeLabel->setFixedSize(200, 100);
 
   connect(playButton, SIGNAL(clicked()), this, SLOT(selectPlay()));
   connect(pauseButton, SIGNAL(clicked()), this, SLOT(pause()));
