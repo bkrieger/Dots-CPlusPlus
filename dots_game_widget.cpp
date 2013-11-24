@@ -48,8 +48,8 @@ void DotsGameWidget::paintEvent(QPaintEvent* event){
   p.drawRect(0, 0, WIDTH-1, HEIGHT-1);
 
   //draw the dots
-  for(int i = 0; i < 10; i++){
-    for(int j = 0; j < 8; j++){
+  for(int i = 0; i < 6; i++){
+    for(int j = 0; j < 6; j++){
       // no fillEllipse... so we need to set the brush and use drawEllipse
       p.setBrush(Qt::red); // use implicit QBrush constructor
       p.drawEllipse(dot_board[i][j].x, dot_board[i][j].y, BALL_RADIUS * 2, BALL_RADIUS * 2);
