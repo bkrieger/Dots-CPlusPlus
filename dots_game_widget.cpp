@@ -17,8 +17,9 @@ void DotsGameWidget::reset()
 {
   for(int i = 0; i < 6; i++){
     for(int j = 0; j < 6; j++){
-        dot_board[i][j].x = i*BALL_RADIUS*2 + 2;
-        dot_board[i][j].y = j*BALL_RADIUS*2 + 2;        
+        dot_board[i][j].color = Qt::red;
+        dot_board[i][j].x = i*BALL_RADIUS*5 + 2;
+        dot_board[i][j].y = j*BALL_RADIUS*5 + 2;        
     }
   }
   // update() forces a repaint of the canvas
@@ -51,7 +52,7 @@ void DotsGameWidget::paintEvent(QPaintEvent* event){
   for(int i = 0; i < 6; i++){
     for(int j = 0; j < 6; j++){
       // no fillEllipse... so we need to set the brush and use drawEllipse
-      p.setBrush(Qt::red); // use implicit QBrush constructor
+      p.setBrush(dot_board[i][j].color); // use implicit QBrush constructor
       p.drawEllipse(dot_board[i][j].x, dot_board[i][j].y, BALL_RADIUS * 2, BALL_RADIUS * 2);
     }
   }

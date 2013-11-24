@@ -34,9 +34,9 @@ class DotsGameWidget : public QWidget
   { 
     int x;
     int y;
+    QColor color;
   } dot_board[6][6]; 
   static const int BALL_RADIUS = 5;
-
 };
 
 #endif
