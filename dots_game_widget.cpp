@@ -11,12 +11,12 @@ DotsGameWidget::DotsGameWidget(QWidget* parent)
   : QWidget(parent) // This passes the constructor parameter to the superclass
 {
   setFixedSize(WIDTH, HEIGHT);
-  //QWidget::setMouseTracking(true);
 }
 
-
+//reset the game
 void DotsGameWidget::reset()
 {
+  //create the new dots
   for(int i = 0; i < 6; i++){
     for(int j = 0; j < 6; j++){
         dot_board[i][j].color = getDotColor();
@@ -25,6 +25,7 @@ void DotsGameWidget::reset()
         dot_board[i][j].y = j*BALL_RADIUS*2.5 + 5;        
     }
   }
+  //set the initial line linked list to null
   line = NULL;
   // update() forces a repaint of the canvas
   update();
@@ -55,9 +56,10 @@ void DotsGameWidget::paintEvent(QPaintEvent* event){
   //draw the dots
   for(int i = 0; i < 6; i++){
     for(int j = 0; j < 6; j++){
-      // no fillEllipse... so we need to set the brush and use drawEllipse
-      p.setBrush(dot_board[i][j].color); // use implicit QBrush constructor
-      p.drawEllipse(dot_board[i][j].x, dot_board[i][j].y, BALL_RADIUS * 2, BALL_RADIUS * 2);
+          // no fillEllipse... so we need to set the brush and use drawEllipse
+          p.setBrush(dot_board[i][j].color); // use implicit QBrush constructor
+          p.drawEllipse(dot_board[i][j].x, dot_board[i][j].y, BALL_RADIUS * 2, BALL_RADIUS * 2);
+
     }
   }
   //draw the lines in the LinkedList
@@ -73,79 +75,93 @@ void DotsGameWidget::paintEvent(QPaintEvent* event){
 }
 
 void DotsGameWidget::mousePressEvent(QMouseEvent* event){
-  int x = event->x();
-  int y = event->y();
-  x = returnIndexOfDot(x);
-  y = returnIndexOfDot(y);
-
+  //index of clicked dot
+    int x = returnIndexOfDot(event->x());
+    int y = returnIndexOfDot(event->y());
+  
   //set the current values
-  currentDotX = x;
-  currentDotY = y;
-  currentDotColor = dot_board[x][y].color;
-
-  //do we need selected? I figure, but haven't used it yet.
-  dot_board[x][y].selected = true;
-  //eventually take this out
-  dot_board[x][y].color = Qt::red;
-  line = NULL;
-
+    curr_dot_x = x;
+    curr_dot_y = y;
+    curr_dot_color = dot_board[x][y].color;
+    dot_board[x][y].selected = true;
+  
   //force a repaint.
   update();
 }
 void DotsGameWidget::mouseReleaseEvent(QMouseEvent* event){
-  //remove last line for visual purposes (TEMPORARY)
-  Line* curr = line;
-  while (curr->next->next != NULL){
-    curr = curr->next;
+  //remove lines
+  line = NULL;
+  int score = 0;
+
+  //handle the score and move dots down
+  for(int i = 0; i < 6; i++){
+    for(int j = 0; j < 6; j++){
+      if(dot_board[i][j].selected){
+        score++;
+        for(int k = j; k >= 0; k--){
+          //replace from above
+          if(k > 0){
+            dot_board[i][k].color = dot_board[i][k-1].color;
+            dot_board[i][k].selected = false;
+          }
+          //create a new dot at top row
+          else {
+            dot_board[i][k].selected = false;
+            dot_board[i][k].color = getDotColor();
+          }
+        }
+      }
+    }
   }
-  curr->next = NULL;
+
+  //connect at some point?
+  needsScoreIncrease(score);
+
   update();
 }
 
 void DotsGameWidget::mouseMoveEvent(QMouseEvent* event){
-  int x = event->x();
-  int y = event->y();
-
   //index of the dot you are currently looking at
-  int dot_x = returnIndexOfDot(x);
-  int dot_y = returnIndexOfDot(y);
-  //write a function or test for adjacency to last looked at dot
-  bool is_adjacent = true;
-  //if the dot is of the same color
-  if(dot_board[dot_x][dot_y].color == currentDotColor){
-    //if the dot is adjacent
-    if(is_adjacent){
-      currentDotX = dot_x;
-      currentDotY = dot_y;
+  int x = returnIndexOfDot(event->x());
+  int y = returnIndexOfDot(event->y());
 
-      dot_board[dot_x][dot_y].selected = true;
-      dot_board[dot_x][dot_y].color = Qt::red;
+  //if it hasn't already been selected
+  if(dot_board[x][y].selected != true){
+    //if the dot is of the same color
+    if(dot_board[x][y].color == curr_dot_color){
+      //if the dot is adjacent
+      if(isAdjacent(curr_dot_x, x, curr_dot_y, y)){
+        //select it
+        curr_dot_x = x;
+        curr_dot_y = y;
+        dot_board[x][y].selected = true;
 
-      //create a new line
-      Line* curr = line;
-      while(curr-> next != NULL){ curr = curr->next; }
-      curr->setEndPoint(currentDotX*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
-        currentDotY*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5);
-      curr->next = new Line(currentDotX*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-        currentDotY*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, x, y, 
-        currentDotColor);
+        //create a new line
+        Line* curr = line;
+        while(curr-> next != NULL){ curr = curr->next; }
+        curr->setEndPoint(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
+          curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5);
+        curr->next = new Line(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+          curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, event->x(), event->y(), 
+          curr_dot_color);
+      }
     }
   }
-
-  //Line for first dot
+  //Line that's not connected to anything
   if(line){
     Line* curr = line;
     while(curr->next != NULL){ curr = curr->next; }
-    curr->setEndPoint(x, y);
+    curr->setEndPoint(event->x(), event->y());
   } else{
-    line = new Line(currentDotX*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-      currentDotY*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, x, y, 
-      currentDotColor);
+    line = new Line(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+      curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, event->x(), event->y(), 
+      curr_dot_color);
   }
 
   update();
 }
 
+//sets a totally random dot color for a new dot
 QColor DotsGameWidget::getDotColor(){
   int choose = rand() % 4;
   if(choose == 0) {
@@ -159,8 +175,16 @@ QColor DotsGameWidget::getDotColor(){
   }
 }
 
-//freakishly hardcoding index selection.
-//fix when less tired.  at least a switch statement
+//checks for adjacency, but not diagonally
+bool DotsGameWidget::isAdjacent(int x1, int x2, int y1, int y2){
+  int xdiff = abs(x1 - x2);
+  int ydiff = abs(y1 - y2);
+  if ((ydiff < 2 && xdiff < 1) || (xdiff < 2 && ydiff < 1)) return true;
+  else return false;
+}
+
+//freakishly hardcoding index selection from global position
+//fix when less tired.  at least use a switch statement
 int DotsGameWidget::returnIndexOfDot(int pos){
   int box_field = BALL_RADIUS*2+10; 
   if (pos < box_field) {

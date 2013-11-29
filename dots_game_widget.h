@@ -60,13 +60,15 @@ class DotsGameWidget : public QWidget
   bool isPaused;
   QColor getDotColor();
   int returnIndexOfDot(int pos);
+  bool isAdjacent(int x1, int x2, int y1, int y2);
   //these are the indices in the array of the current dot.
-  int currentDotX, currentDotY;
+  int curr_dot_x, curr_dot_y;
   //track color for selection purposes
-  QColor currentDotColor;
+  QColor curr_dot_color;
   static const int WIDTH = 375;
   static const int HEIGHT = 375;
   Line* line;
+
   struct dot 
   { 
     int x;
