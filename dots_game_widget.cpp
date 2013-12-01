@@ -265,16 +265,18 @@ void DotsGameWidget::selectDot(int x, int y, QMouseEvent *event) {
 
 //sets a totally random dot color for a new dot
 QColor DotsGameWidget::getDotColor(){
-  int choose = rand() % 4;
+  int choose = rand() % 5;
   switch (choose) {
     case 0:
       return Qt::white;
     case 1:
-      return Qt::darkCyan;
+      return Qt::darkRed;
     case 2:
-      return Qt::darkMagenta;
+      return Qt::darkBlue;
+    case 3:
+      return Qt::darkGreen;
     default:
-      return Qt::darkGray;
+      return Qt::darkYellow;
   }
 }
 
