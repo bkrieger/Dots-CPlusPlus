@@ -11,6 +11,11 @@ using namespace std;
 //LinkedList style class to draw lines
 class Line {
 public:
+  // These indexes are used to know which dot the line comes from
+  // They are not to be used for drawing.
+  int startXIndex;
+  int startYIndex;
+  // These following values are to be used for drawing.
   int start_X;
   int start_Y;
   int end_X;
@@ -18,7 +23,9 @@ public:
   Line* next;
   QColor color;
 
-  Line(int x, int y, int x2, int y2, QColor qcolor){
+  Line(int xIndex, int yIndex, int x, int y, int x2, int y2, QColor qcolor){
+    startXIndex = xIndex;
+    startYIndex = yIndex;
     start_X = x;
     start_Y = y;
     end_X = x2;

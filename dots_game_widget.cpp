@@ -154,24 +154,36 @@ void DotsGameWidget::mouseMoveEvent(QMouseEvent* event){
           //create a new line
           Line* curr = line;
           while(curr->next != NULL){ curr = curr->next; }
-          curr->setEndPoint(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
+          curr->setEndPoint(
+            curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
             curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5);
-          curr->next = new Line(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-            curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, event->x(), event->y(), 
+
+          curr->next = new Line(
+            x, 
+            y, 
+            curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+            curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+            event->x(), 
+            event->y(), 
             curr_dot_color);
         }
       }
-    } else {
-      // If we mouse over a dot that has already been selected
-      // Check if we go back over an adjacent dot
+    } else { // If we mouse over a dot that has already been selected
+      // make sure we're going over an adjacent dot
       if (isAdjacent(curr_dot_x, x, curr_dot_y, y)) {
-        // If we go back over an adjacent dot, deselect the current dot
-        // dot_board[curr_dot_x][curr_dot_y].selected = false;
-        // numSelected--;
-        // Make the dot we're over the current dot
-        // curr_dot_x = x;
-        // curr_dot_y = y;
-
+        // Check if we're going back over the second to last dot.
+        Line *secondToLast = line;
+        while(secondToLast->next->next != NULL) { secondToLast = secondToLast->next; }
+        if (secondToLast->startXIndex == x && secondToLast->startYIndex == y) {
+          // If we are going over the second to last dot, get rid of the last line
+          // and deselect the current dot, and make the second to last dot the current.
+          secondToLast->next = NULL;
+          dot_board[curr_dot_x][curr_dot_y].selected = false;
+          numSelected--;
+          //Make the dot we're over the current dot
+          curr_dot_x = x;
+          curr_dot_y = y;
+        }
       }
     }
     //Line that's not connected to anything
@@ -180,8 +192,13 @@ void DotsGameWidget::mouseMoveEvent(QMouseEvent* event){
       while(curr->next != NULL){ curr = curr->next; }
       curr->setEndPoint(event->x(), event->y());
     } else{
-      line = new Line(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-        curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, event->x(), event->y(), 
+      line = new Line(
+        curr_dot_x,
+        curr_dot_y, 
+        curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+        curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+        event->x(), 
+        event->y(), 
         curr_dot_color);
     }
 
