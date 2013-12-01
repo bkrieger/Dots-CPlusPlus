@@ -133,6 +133,11 @@ void DotsGameWidget::mouseReleaseEvent(QMouseEvent*){
               else {
                 dot_board[i][k].selected = false;
                 dot_board[i][k].color = getDotColor();
+                if (hasSquare) {
+                  while (dot_board[i][k].color == curr_dot_color) {
+                    dot_board[i][k].color = getDotColor();
+                  }
+                }
               }
             }
           } else {
@@ -148,31 +153,6 @@ void DotsGameWidget::mouseReleaseEvent(QMouseEvent*){
   }
   numSelected = 0;
   update();
-}
-
-void DotsGameWidget::selectDot(int x, int y, QMouseEvent *event) {
-  curr_dot_x = x;
-  curr_dot_y = y;
-  if (!dot_board[x][y].selected) {
-    dot_board[x][y].selected = true;
-    numSelected++;
-  }
-
-  //create a new line
-  Line* curr = line;
-  while(curr->next != NULL){ curr = curr->next; }
-  curr->setEndPoint(
-    curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
-    curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5);
-
-  curr->next = new Line(
-    x, 
-    y, 
-    curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-    curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-    event->x(), 
-    event->y(), 
-    curr_dot_color);
 }
 
 void DotsGameWidget::mouseMoveEvent(QMouseEvent* event){
@@ -235,10 +215,7 @@ void DotsGameWidget::mouseMoveEvent(QMouseEvent* event){
             }
             curr = curr->next;
           }
-
         }
-
-
       }
     }
     //Line that's not connected to anything
@@ -261,17 +238,43 @@ void DotsGameWidget::mouseMoveEvent(QMouseEvent* event){
   }
 }
 
+void DotsGameWidget::selectDot(int x, int y, QMouseEvent *event) {
+  curr_dot_x = x;
+  curr_dot_y = y;
+  if (!dot_board[x][y].selected) {
+    dot_board[x][y].selected = true;
+    numSelected++;
+  }
+
+  //create a new line
+  Line* curr = line;
+  while(curr->next != NULL){ curr = curr->next; }
+  curr->setEndPoint(
+    curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
+    curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5);
+
+  curr->next = new Line(
+    x, 
+    y, 
+    curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+    curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+    event->x(), 
+    event->y(), 
+    curr_dot_color);
+}
+
 //sets a totally random dot color for a new dot
 QColor DotsGameWidget::getDotColor(){
   int choose = rand() % 4;
-  if(choose == 0) {
-    return Qt::white;
-  } else if (choose == 1) {
-    return Qt::darkCyan;
-  } else if (choose == 2) {
-    return Qt::darkMagenta;
-  } else {
-    return Qt::darkGray;
+  switch (choose) {
+    case 0:
+      return Qt::white;
+    case 1:
+      return Qt::darkCyan;
+    case 2:
+      return Qt::darkMagenta;
+    default:
+      return Qt::darkGray;
   }
 }
 
