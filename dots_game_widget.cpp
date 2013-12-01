@@ -64,7 +64,9 @@ void DotsGameWidget::paintEvent(QPaintEvent*){
   if(line){
     Line* curr = line;
     while(curr != NULL){
-      p.setBrush(curr->color);
+      QPen pen(curr->color);
+      pen.setWidth(6);
+      p.setPen(pen);
       p.drawLine(curr->start_X, curr->start_Y, curr->end_X, curr->end_Y);
       curr = curr->next;
     }
@@ -95,14 +97,12 @@ void DotsGameWidget::mouseReleaseEvent(QMouseEvent*){
   line = NULL;
 
   if (!isPaused) {
-    int score = 0;
     //handle the score and move dots down
     for(int i = 0; i < NUM_DOTS_HORIZONTAL; i++){
       for(int j = 0; j < NUM_DOTS_VERTICAL; j++){
         if(dot_board[i][j].selected) {
           // only do something if we have at least 2
           if (numSelected >= 2) {
-            score++;
             for(int k = j; k >= 0; k--){
               //replace from above
               if(k > 0){
@@ -122,7 +122,9 @@ void DotsGameWidget::mouseReleaseEvent(QMouseEvent*){
         }
       }
     }
-    needsScoreIncrease(score);
+    if (numSelected >= 2) {
+      needsScoreIncrease((numSelected-1)*2);
+    }
   }
   numSelected = 0;
   update();

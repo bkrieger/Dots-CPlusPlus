@@ -43,7 +43,7 @@ class DotsCanvas : public QWidget
   QLabel* scoreLabel;
   QLabel* timeLabel;
 
-  static const int WIDTH = 450;
+  static const int WIDTH = 400;
   static const int HEIGHT = 600;
 
 };

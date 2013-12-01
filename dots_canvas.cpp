@@ -26,8 +26,8 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   timeLabel = new QLabel(this);
 
   playButton->setFixedSize(100, 100);
-  pauseButton->setFixedSize(100, 50);
-  resetButton->setFixedSize(100, 50);
+  pauseButton->setFixedSize(150, 50);
+  resetButton->setFixedSize(150, 50);
 
   scoreLabel->setFixedSize(200, 100);
   timeLabel->setFixedSize(250, 100);
@@ -103,7 +103,7 @@ void DotsCanvas::timerTicked()
     timeLabel->setText(QString("Time Remaining: %1 seconds").arg(timeLeft));
     if (timeLeft == 0) {
       gameWidget->setPaused(true);
-      timeLabel->setText(QString("Game Over! Click Reset to try again!"));
+      timeLabel->setText(QString("Game Over! Reset to try again."));
     }
   }
 }
