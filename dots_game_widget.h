@@ -67,7 +67,10 @@ class DotsGameWidget : public QWidget
   QColor curr_dot_color;
   static const int WIDTH = 375;
   static const int HEIGHT = 375;
+  static const int NUM_DOTS_HORIZONTAL = 6;
+  static const int NUM_DOTS_VERTICAL = 6;
   Line* line;
+  int numSelected;
 
   struct dot 
   { 

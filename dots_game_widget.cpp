@@ -17,8 +17,8 @@ DotsGameWidget::DotsGameWidget(QWidget* parent)
 void DotsGameWidget::reset()
 {
   //create the new dots
-  for(int i = 0; i < 6; i++){
-    for(int j = 0; j < 6; j++){
+  for(int i = 0; i < NUM_DOTS_HORIZONTAL; i++){
+    for(int j = 0; j < NUM_DOTS_VERTICAL; j++){
         dot_board[i][j].color = getDotColor();
         dot_board[i][j].selected = false;
         dot_board[i][j].x = i*BALL_RADIUS*2.5 + 5;
@@ -27,26 +27,18 @@ void DotsGameWidget::reset()
   }
   //set the initial line linked list to null
   line = NULL;
+  numSelected = 0;
   // update() forces a repaint of the canvas
   update();
 }
 
 void DotsGameWidget::setPaused(bool p){
-  //if the game has changed state
-  if(!(isPaused == p)){
-    //if we need to pause
-    if(p){
-
-    } 
-    //or if we need to resume
-    else {
-
-    }
-  }
   isPaused = p;
+  // update canvas so we draw everything grey when paused
+  update();
 }
 
-void DotsGameWidget::paintEvent(QPaintEvent* event){
+void DotsGameWidget::paintEvent(QPaintEvent*){
   // create painting context
   QPainter p(this);
 
@@ -54,10 +46,15 @@ void DotsGameWidget::paintEvent(QPaintEvent* event){
   p.drawRect(0, 0, WIDTH-1, HEIGHT-1);
 
   //draw the dots
-  for(int i = 0; i < 6; i++){
-    for(int j = 0; j < 6; j++){
+  for(int i = 0; i < NUM_DOTS_HORIZONTAL; i++){
+    for(int j = 0; j < NUM_DOTS_VERTICAL; j++){
           // no fillEllipse... so we need to set the brush and use drawEllipse
-          p.setBrush(dot_board[i][j].color); // use implicit QBrush constructor
+          // if we're paused, draw everything gray.
+          if (isPaused) {
+            p.setBrush(Qt::darkGray);
+          } else {
+            p.setBrush(dot_board[i][j].color); // use implicit QBrush constructor
+          }
           p.drawEllipse(dot_board[i][j].x, dot_board[i][j].y, BALL_RADIUS * 2, BALL_RADIUS * 2);
 
     }
@@ -75,90 +72,106 @@ void DotsGameWidget::paintEvent(QPaintEvent* event){
 }
 
 void DotsGameWidget::mousePressEvent(QMouseEvent* event){
-  //index of clicked dot
-    int x = returnIndexOfDot(event->x());
-    int y = returnIndexOfDot(event->y());
-  
-  //set the current values
-    curr_dot_x = x;
-    curr_dot_y = y;
-    curr_dot_color = dot_board[x][y].color;
-    dot_board[x][y].selected = true;
-  
-  //force a repaint.
-  update();
+  if (!isPaused) {
+    //index of clicked dot
+      int x = returnIndexOfDot(event->x());
+      int y = returnIndexOfDot(event->y());
+    
+    //set the current values
+      curr_dot_x = x;
+      curr_dot_y = y;
+      curr_dot_color = dot_board[x][y].color;
+      dot_board[x][y].selected = true;
+      numSelected = 1;
+    
+    //force a repaint.
+    update();
+  }
+
 }
-void DotsGameWidget::mouseReleaseEvent(QMouseEvent* event){
+void DotsGameWidget::mouseReleaseEvent(QMouseEvent*){
   //remove lines
   line = NULL;
-  int score = 0;
 
-  //handle the score and move dots down
-  for(int i = 0; i < 6; i++){
-    for(int j = 0; j < 6; j++){
-      if(dot_board[i][j].selected){
-        score++;
-        for(int k = j; k >= 0; k--){
-          //replace from above
-          if(k > 0){
-            dot_board[i][k].color = dot_board[i][k-1].color;
-            dot_board[i][k].selected = false;
-          }
-          //create a new dot at top row
-          else {
-            dot_board[i][k].selected = false;
-            dot_board[i][k].color = getDotColor();
+  if (!isPaused) {
+    int score = 0;
+    //handle the score and move dots down
+    for(int i = 0; i < NUM_DOTS_HORIZONTAL; i++){
+      for(int j = 0; j < NUM_DOTS_VERTICAL; j++){
+        if(dot_board[i][j].selected) {
+          // only do something if we have at least 2
+          if (numSelected >= 2) {
+            score++;
+            for(int k = j; k >= 0; k--){
+              //replace from above
+              if(k > 0){
+                dot_board[i][k].color = dot_board[i][k-1].color;
+                dot_board[i][k].selected = false;
+              }
+              //create a new dot at top row
+              else {
+                dot_board[i][k].selected = false;
+                dot_board[i][k].color = getDotColor();
+              }
+            }
+          } else {
+            // we only want to unselect it
+            dot_board[i][j].selected = false;
           }
         }
       }
     }
+    needsScoreIncrease(score);
   }
-
-  //connect at some point?
-  needsScoreIncrease(score);
-
+  numSelected = 0;
   update();
 }
 
 void DotsGameWidget::mouseMoveEvent(QMouseEvent* event){
-  //index of the dot you are currently looking at
-  int x = returnIndexOfDot(event->x());
-  int y = returnIndexOfDot(event->y());
 
-  //if it hasn't already been selected
-  if(dot_board[x][y].selected != true){
-    //if the dot is of the same color
-    if(dot_board[x][y].color == curr_dot_color){
-      //if the dot is adjacent
-      if(isAdjacent(curr_dot_x, x, curr_dot_y, y)){
-        //select it
-        curr_dot_x = x;
-        curr_dot_y = y;
-        dot_board[x][y].selected = true;
+  // We check to make sure that the left mouse button is pressed, 
+  // otherwise we don't want to do anything
+  if (!isPaused && (event->buttons() & Qt::LeftButton)) {
+    //index of the dot you are currently looking at
+    int x = returnIndexOfDot(event->x());
+    int y = returnIndexOfDot(event->y());
 
-        //create a new line
-        Line* curr = line;
-        while(curr-> next != NULL){ curr = curr->next; }
-        curr->setEndPoint(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
-          curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5);
-        curr->next = new Line(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-          curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, event->x(), event->y(), 
-          curr_dot_color);
+    //if it hasn't already been selected
+    if(dot_board[x][y].selected != true){
+      //if the dot is of the same color
+      if(dot_board[x][y].color == curr_dot_color){
+        //if the dot is adjacent
+        if(isAdjacent(curr_dot_x, x, curr_dot_y, y)){
+          //select it
+          curr_dot_x = x;
+          curr_dot_y = y;
+          dot_board[x][y].selected = true;
+          numSelected++;
+
+          //create a new line
+          Line* curr = line;
+          while(curr-> next != NULL){ curr = curr->next; }
+          curr->setEndPoint(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
+            curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5);
+          curr->next = new Line(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+            curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, event->x(), event->y(), 
+            curr_dot_color);
+        }
       }
     }
-  }
-  //Line that's not connected to anything
-  if(line){
-    Line* curr = line;
-    while(curr->next != NULL){ curr = curr->next; }
-    curr->setEndPoint(event->x(), event->y());
-  } else{
-    line = new Line(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-      curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, event->x(), event->y(), 
-      curr_dot_color);
-  }
+    //Line that's not connected to anything
+    if(line){
+      Line* curr = line;
+      while(curr->next != NULL){ curr = curr->next; }
+      curr->setEndPoint(event->x(), event->y());
+    } else{
+      line = new Line(curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+        curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, event->x(), event->y(), 
+        curr_dot_color);
+    }
 
-  update();
+    update();
+  }
 }
 
 //sets a totally random dot color for a new dot
@@ -179,7 +192,7 @@ QColor DotsGameWidget::getDotColor(){
 bool DotsGameWidget::isAdjacent(int x1, int x2, int y1, int y2){
   int xdiff = abs(x1 - x2);
   int ydiff = abs(y1 - y2);
-  if ((ydiff < 2 && xdiff < 1) || (xdiff < 2 && ydiff < 1)) return true;
+  if ((ydiff == 1 && xdiff == 0) || (xdiff == 1 && ydiff == 0)) return true;
   else return false;
 }
 
@@ -197,7 +210,7 @@ int DotsGameWidget::returnIndexOfDot(int pos){
     return 3;
   } else if (pos < 5*box_field) {
     return 4;
-  } else if (pos < 6*box_field) {
+  } else { //if (pos < 6*box_field)
     return 5;
   }
 }

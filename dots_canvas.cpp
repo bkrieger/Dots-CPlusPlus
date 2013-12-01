@@ -30,11 +30,12 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   resetButton->setFixedSize(100, 50);
 
   scoreLabel->setFixedSize(200, 100);
-  timeLabel->setFixedSize(200, 100);
+  timeLabel->setFixedSize(250, 100);
 
   connect(playButton, SIGNAL(clicked()), this, SLOT(selectPlay()));
   connect(pauseButton, SIGNAL(clicked()), this, SLOT(pause()));
   connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
+  connect(gameWidget, SIGNAL(needsScoreIncrease(int)), this, SLOT(increaseScore(int)));
 
   layout->addWidget(playButton, 0, 0);
 
@@ -81,9 +82,11 @@ void DotsCanvas::reset()
 
 void DotsCanvas::pause()
 {
-  isPaused = !isPaused;
-  gameWidget->setPaused(isPaused);
-  pauseButton->setText(isPaused ? "Unpause" : "Pause");
+  if (timeLeft > 0) {
+    isPaused = !isPaused;
+    gameWidget->setPaused(isPaused);
+    pauseButton->setText(isPaused ? "Unpause" : "Pause");
+  }
 }
 
 void DotsCanvas::increaseScore(int value)
@@ -100,6 +103,7 @@ void DotsCanvas::timerTicked()
     timeLabel->setText(QString("Time Remaining: %1 seconds").arg(timeLeft));
     if (timeLeft == 0) {
       gameWidget->setPaused(true);
+      timeLabel->setText(QString("Game Over! Click Reset to try again!"));
     }
   }
 }
