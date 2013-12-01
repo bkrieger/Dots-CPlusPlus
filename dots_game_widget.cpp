@@ -28,6 +28,9 @@ void DotsGameWidget::reset()
   //set the initial line linked list to null
   line = NULL;
   numSelected = 0;
+  hasSquare = false;
+  squareXIndex = -1;
+  squareYIndex = -1;
   isPaused = false;
   // update() forces a repaint of the canvas
   update();
@@ -86,6 +89,9 @@ void DotsGameWidget::mousePressEvent(QMouseEvent* event){
       curr_dot_color = dot_board[x][y].color;
       dot_board[x][y].selected = true;
       numSelected = 1;
+      hasSquare = false;
+      squareXIndex = -1;
+      squareYIndex = -1;
     
     //force a repaint.
     update();
@@ -97,6 +103,20 @@ void DotsGameWidget::mouseReleaseEvent(QMouseEvent*){
   line = NULL;
 
   if (!isPaused) {
+
+    if (hasSquare) {
+      // select all dots of curr_dot_color
+      for (int i = 0; i < NUM_DOTS_HORIZONTAL; i++) {
+        for (int j = 0; j < NUM_DOTS_VERTICAL; j++) {
+          // If the dot isn't already selected, and is of the right color, select it.
+          if (dot_board[i][j].color == curr_dot_color && !dot_board[i][j].selected) {
+            dot_board[i][j].selected = true;
+            numSelected++;
+          }
+        }
+      }
+    }
+
     //handle the score and move dots down
     for(int i = 0; i < NUM_DOTS_HORIZONTAL; i++){
       for(int j = 0; j < NUM_DOTS_VERTICAL; j++){
@@ -130,6 +150,31 @@ void DotsGameWidget::mouseReleaseEvent(QMouseEvent*){
   update();
 }
 
+void DotsGameWidget::selectDot(int x, int y, QMouseEvent *event) {
+  curr_dot_x = x;
+  curr_dot_y = y;
+  if (!dot_board[x][y].selected) {
+    dot_board[x][y].selected = true;
+    numSelected++;
+  }
+
+  //create a new line
+  Line* curr = line;
+  while(curr->next != NULL){ curr = curr->next; }
+  curr->setEndPoint(
+    curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
+    curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5);
+
+  curr->next = new Line(
+    x, 
+    y, 
+    curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+    curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
+    event->x(), 
+    event->y(), 
+    curr_dot_color);
+}
+
 void DotsGameWidget::mouseMoveEvent(QMouseEvent* event){
 
   // We check to make sure that the left mouse button is pressed, 
@@ -146,44 +191,54 @@ void DotsGameWidget::mouseMoveEvent(QMouseEvent* event){
         //if the dot is adjacent
         if(isAdjacent(curr_dot_x, x, curr_dot_y, y)){
           //select it
-          curr_dot_x = x;
-          curr_dot_y = y;
-          dot_board[x][y].selected = true;
-          numSelected++;
-
-          //create a new line
-          Line* curr = line;
-          while(curr->next != NULL){ curr = curr->next; }
-          curr->setEndPoint(
-            curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5,
-            curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5);
-
-          curr->next = new Line(
-            x, 
-            y, 
-            curr_dot_x*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-            curr_dot_y*(BALL_RADIUS*2 + BALL_RADIUS/2) + BALL_RADIUS + 5, 
-            event->x(), 
-            event->y(), 
-            curr_dot_color);
+          selectDot(x, y, event);
         }
       }
     } else { // If we mouse over a dot that has already been selected
       // make sure we're going over an adjacent dot
       if (isAdjacent(curr_dot_x, x, curr_dot_y, y)) {
-        // Check if we're going back over the second to last dot.
+        // Check for backtrack
         Line *secondToLast = line;
-        while(secondToLast->next->next != NULL) { secondToLast = secondToLast->next; }
+        while (secondToLast->next->next != NULL) { secondToLast = secondToLast->next; }
+        // When while loop is over, secondToLast is the second to last line.
         if (secondToLast->startXIndex == x && secondToLast->startYIndex == y) {
           // If we are going over the second to last dot, get rid of the last line
           // and deselect the current dot, and make the second to last dot the current.
           secondToLast->next = NULL;
-          dot_board[curr_dot_x][curr_dot_y].selected = false;
-          numSelected--;
+          // If we are not backtracking over a square, deselect the dot
+          if (!(curr_dot_x == squareXIndex && curr_dot_y == squareYIndex)) {
+            dot_board[curr_dot_x][curr_dot_y].selected = false;
+            numSelected--;
+          } else {
+            // we are backtracking over a square
+            hasSquare = false;
+            squareXIndex = -1;
+            squareYIndex = -1;
+          }
           //Make the dot we're over the current dot
           curr_dot_x = x;
           curr_dot_y = y;
+        } else if (!hasSquare) {
+          // If we haven't backtracked, and we don't already have a square, check for a square.
+          Line *curr = line;
+          // Only go up to the second to last element in while loop, otherwise it's a backtrack.
+          while (curr->next->next != NULL) {
+            // Check if the starting point of curr is what we're mousing over
+            // If yes, we just made a square
+            if (curr->startXIndex == x && curr->startYIndex == y) {
+              // Square. Allow this connection to be made.
+              selectDot(x, y, event);
+              hasSquare = true;
+              squareXIndex = x;
+              squareYIndex = y;
+              break;
+            }
+            curr = curr->next;
+          }
+
         }
+
+
       }
     }
     //Line that's not connected to anything

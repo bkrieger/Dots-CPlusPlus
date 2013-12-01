@@ -68,6 +68,7 @@ class DotsGameWidget : public QWidget
   QColor getDotColor();
   int returnIndexOfDot(int pos);
   bool isAdjacent(int x1, int x2, int y1, int y2);
+  void selectDot(int x, int y, QMouseEvent *event);
   //these are the indices in the array of the current dot.
   int curr_dot_x, curr_dot_y;
   //track color for selection purposes
@@ -78,8 +79,11 @@ class DotsGameWidget : public QWidget
   static const int NUM_DOTS_VERTICAL = 6;
   Line* line;
   int numSelected;
+  bool hasSquare;
+  int squareXIndex;
+  int squareYIndex;
 
-  struct dot 
+  struct Dot 
   { 
     int x;
     int y;
