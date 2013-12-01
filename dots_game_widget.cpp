@@ -28,6 +28,7 @@ void DotsGameWidget::reset()
   //set the initial line linked list to null
   line = NULL;
   numSelected = 0;
+  isPaused = false;
   // update() forces a repaint of the canvas
   update();
 }
