@@ -102,6 +102,7 @@ void DotsCanvas::timerTicked()
     timeLeft--;
     timeLabel->setText(QString("Time Remaining: %1 seconds").arg(timeLeft));
     if (timeLeft == 0) {
+      gameWidget->reset();
       gameWidget->setPaused(true);
       timeLabel->setText(QString("Game Over! Reset to try again."));
     }
