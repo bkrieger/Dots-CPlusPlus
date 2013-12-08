@@ -26,6 +26,7 @@ class DotsCanvas : public QWidget
   void selectPlay();
   void reset();
   void pause();
+  void cheat();
 
  private:
   bool boardShowing;
@@ -39,6 +40,7 @@ class DotsCanvas : public QWidget
   DotsGameWidget* gameWidget;
   QPushButton* playButton;
   QPushButton* pauseButton;
+  QPushButton* cheatButton;
   QPushButton* resetButton;
   QLabel* scoreLabel;
   QLabel* timeLabel;

@@ -1,4 +1,3 @@
-
 /* File: dots_canvas.cpp
 */
 
@@ -21,13 +20,15 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   playButton = new QPushButton("Start", this);
   pauseButton = new QPushButton("Pause", this);
   resetButton = new QPushButton("Reset", this);
+  cheatButton = new QPushButton("+", this);
   gameWidget = new DotsGameWidget(this);
   scoreLabel = new QLabel(this);
   timeLabel = new QLabel(this);
 
   playButton->setFixedSize(100, 100);
-  pauseButton->setFixedSize(150, 50);
-  resetButton->setFixedSize(150, 50);
+  cheatButton->setFixedSize(50, 50);
+  pauseButton->setFixedSize(100, 50);
+  resetButton->setFixedSize(100, 50);
 
   scoreLabel->setFixedSize(200, 100);
   timeLabel->setFixedSize(250, 100);
@@ -35,6 +36,7 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   connect(playButton, SIGNAL(clicked()), this, SLOT(selectPlay()));
   connect(pauseButton, SIGNAL(clicked()), this, SLOT(pause()));
   connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
+  connect(cheatButton, SIGNAL(clicked()), this, SLOT(cheat()));
   connect(gameWidget, SIGNAL(needsScoreIncrease(int)), this, SLOT(increaseScore(int)));
 
   layout->addWidget(playButton, 0, 0);
@@ -43,25 +45,27 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   timeLabel->hide();
   gameWidget->hide();
   pauseButton->hide();
+  cheatButton->hide();
   resetButton->hide();
 }
 
 void DotsCanvas::selectPlay() 
 {
   boardShowing = true;
-
   layout->removeWidget(playButton);
   playButton->hide();
 
   layout->addWidget(scoreLabel, 0, 0);
-  layout->addWidget(timeLabel, 0, 1);
+  layout->addWidget(timeLabel, 0, 2);
   layout->addWidget(gameWidget, 1, 0, 1, 2);
-  layout->addWidget(pauseButton, 2, 0);
-  layout->addWidget(resetButton, 2, 1);
+  layout->addWidget(pauseButton, 2, 0, Qt::AlignCenter);
+  layout->addWidget(cheatButton, 2, 1, Qt::AlignCenter);
+  layout->addWidget(resetButton, 2, 2, Qt::AlignCenter);
 
   scoreLabel->show();
   timeLabel->show();
   gameWidget->show();
+  cheatButton->show();
   pauseButton->show();
   resetButton->show();
 
@@ -81,6 +85,15 @@ void DotsCanvas::reset()
 }
 
 void DotsCanvas::pause()
+{
+  if (timeLeft > 0) {
+    isPaused = !isPaused;
+    gameWidget->setPaused(isPaused);
+    pauseButton->setText(isPaused ? "Unpause" : "Pause");
+  }
+}
+
+void DotsCanvas::cheat()
 {
   if (timeLeft > 0) {
     isPaused = !isPaused;
