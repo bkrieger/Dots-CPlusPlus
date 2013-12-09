@@ -56,6 +56,8 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   pauseButton->hide();
   cheatButton->hide();
   resetButton->hide();
+
+  cheatButton->setEnabled(false);
 }
 
 void DotsCanvas::selectPlayWithTime()
@@ -155,10 +157,13 @@ void DotsCanvas::pause()
 
 void DotsCanvas::cheat()
 {
-  if (cheats > 0) {
+  if (cheats > 0 && timeOrMovesLeft > 0) {
     timeOrMovesLeft+=6;
     decrementTimeOrMoves();
     cheats--;
+    if (cheats == 0) {
+      cheatButton->setEnabled(false);
+    }
   }
 }
 
@@ -170,6 +175,7 @@ void DotsCanvas::increaseScore(int value)
   if(score >= score_to_cheat){
     cheats++;
     score_to_cheat += 100;
+    cheatButton->setEnabled(true);
   }
   score += value;
   scoreLabel->setText(QString("Score: %1").arg(score));
