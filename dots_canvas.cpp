@@ -10,60 +10,87 @@ DotsCanvas::DotsCanvas(QWidget* parent)
 {  
   timer = new QTimer(this);
   timer->setInterval(1000); // an interval of 1s to update clock
-  timer->start();
 
   connect(timer, SIGNAL(timeout()), this, SLOT(timerTicked()));
 
   setFixedSize(WIDTH, HEIGHT);
 
   layout = new QGridLayout(this);
-  playButton = new QPushButton("Start", this);
+  playWithTimeButton = new QPushButton("Timed Game", this);
+  playWithMovesButton = new QPushButton("Moves Game", this);
+  backButton = new QPushButton("Back", this);
   pauseButton = new QPushButton("Pause", this);
   resetButton = new QPushButton("Reset", this);
   cheatButton = new QPushButton("+", this);
   gameWidget = new DotsGameWidget(this);
   scoreLabel = new QLabel(this);
-  timeLabel = new QLabel(this);
+  timeOrMovesLabel = new QLabel(this);
+  infoLabel = new QLabel(this);
 
-  playButton->setFixedSize(100, 100);
+  playWithTimeButton->setFixedSize(200, 100);
+  playWithMovesButton->setFixedSize(200, 100);
   cheatButton->setFixedSize(50, 50);
+  backButton->setFixedSize(100, 50);
   pauseButton->setFixedSize(100, 50);
   resetButton->setFixedSize(100, 50);
+  scoreLabel->setFixedSize(100, 50);
+  timeOrMovesLabel->setFixedSize(250, 50);
 
-  scoreLabel->setFixedSize(200, 100);
-  timeLabel->setFixedSize(250, 100);
-
-  connect(playButton, SIGNAL(clicked()), this, SLOT(selectPlay()));
+  connect(playWithTimeButton, SIGNAL(clicked()), this, SLOT(selectPlayWithTime()));
+  connect(playWithMovesButton, SIGNAL(clicked()), this, SLOT(selectPlayWithMoves()));
+  connect(backButton, SIGNAL(clicked()), this, SLOT(back()));
   connect(pauseButton, SIGNAL(clicked()), this, SLOT(pause()));
   connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
   connect(cheatButton, SIGNAL(clicked()), this, SLOT(cheat()));
   connect(gameWidget, SIGNAL(needsScoreIncrease(int)), this, SLOT(increaseScore(int)));
 
-  layout->addWidget(playButton, 0, 0);
+  layout->addWidget(playWithTimeButton, 0, 0);
+  layout->addWidget(playWithMovesButton, 0, 1);
+  layout->addWidget(infoLabel, 1, 0, 1, 2, Qt::AlignCenter);
+  infoLabel->setText("Welcome to Dots! \n In Timed Game Mode: \n Connect as many dots as you can before time runs out! \n In Moves Game Mode: \n Get as many points as you can in 30 moves! \n \n For each type of game, you connect the dots by dragging \n lines between adjacent dots of the same color.  The more \n dots you connect in a row, the more points you will score. \n If you make a square of with dots of the same color, that \n color will be wiped from the board.  Every 100 points you \n score you get a 'bonus.'  In the timed mode, that means \n five extra seconds on the clock.  In the moves mode, it \n gives you five extra moves.  When time/moves are up, \n the game is over!");
 
   scoreLabel->hide();
-  timeLabel->hide();
+  timeOrMovesLabel->hide();
+  backButton->hide();
   gameWidget->hide();
   pauseButton->hide();
   cheatButton->hide();
   resetButton->hide();
 }
 
-void DotsCanvas::selectPlay() 
+void DotsCanvas::selectPlayWithTime()
 {
-  boardShowing = true;
-  layout->removeWidget(playButton);
-  playButton->hide();
+  playingTimedGame = true;
+  timer->start();
+  startGame();
+}
 
-  layout->addWidget(scoreLabel, 0, 0);
-  layout->addWidget(timeLabel, 0, 2);
-  layout->addWidget(gameWidget, 1, 0, 1, 2);
-  layout->addWidget(pauseButton, 2, 0, Qt::AlignCenter);
-  layout->addWidget(cheatButton, 2, 1, Qt::AlignCenter);
-  layout->addWidget(resetButton, 2, 2, Qt::AlignCenter);
+void DotsCanvas::selectPlayWithMoves()
+{
+  playingTimedGame = false;
+  startGame();
+}
 
+void DotsCanvas::startGame() 
+{
+  layout->removeWidget(playWithTimeButton);
+  layout->removeWidget(playWithMovesButton);
+  layout->removeWidget(infoLabel);
+  playWithTimeButton->hide();
+  playWithMovesButton->hide();
+  infoLabel->hide();
+
+  layout->addWidget(backButton, 0, 0);
+  layout->addWidget(scoreLabel, 1, 0);
+  layout->addWidget(timeOrMovesLabel, 1, 1);
+  layout->addWidget(gameWidget, 2, 0, 1, 3);
+  layout->addWidget(pauseButton, 3, 0, Qt::AlignCenter);
+  layout->addWidget(cheatButton, 3, 1, Qt::AlignCenter);
+  layout->addWidget(resetButton, 3, 2, Qt::AlignCenter);
+
+  backButton->show();
   scoreLabel->show();
-  timeLabel->show();
+  timeOrMovesLabel->show();
   gameWidget->show();
   cheatButton->show();
   pauseButton->show();
@@ -72,21 +99,54 @@ void DotsCanvas::selectPlay()
   reset();
 }
 
+void DotsCanvas::back()
+{
+  timer->stop();
+
+  layout->removeWidget(backButton);
+  layout->removeWidget(scoreLabel);
+  layout->removeWidget(timeOrMovesLabel);
+  layout->removeWidget(gameWidget);
+  layout->removeWidget(pauseButton);
+  layout->removeWidget(resetButton);
+  layout->removeWidget(cheatButton);
+
+  resetButton->hide();
+  pauseButton->hide();
+  gameWidget->hide();
+  timeOrMovesLabel->hide();
+  scoreLabel->hide();
+  backButton->hide();
+  cheatButton->hide();
+
+  layout->addWidget(playWithTimeButton, 0, 0);
+  layout->addWidget(playWithMovesButton, 0, 1);
+  playWithTimeButton->show();
+  playWithMovesButton->show();
+}
+
 void DotsCanvas::reset()
 {
+  score_to_cheat = 100;
   score = 0;
+  cheats = 0;
   isPaused = false;
-  timeLeft = 60; //60seconds
+  if (playingTimedGame) {
+    timeOrMovesLeft = 60; //60seconds
+    timeOrMovesLabel->setText("Time Remaining: 60 seconds");
+  } else {
+    timeOrMovesLeft = 30; //30 moves
+    timeOrMovesLabel->setText("Moves Remaining: 30");
+  }
   gameWidget->reset();
 
   pauseButton->setText("Pause");
   scoreLabel->setText("Score: 0");
-  timeLabel->setText("Time Remaining: 60 seconds");
 }
 
 void DotsCanvas::pause()
 {
-  if (timeLeft > 0) {
+  if (timeOrMovesLeft > 0) {
     isPaused = !isPaused;
     gameWidget->setPaused(isPaused);
     pauseButton->setText(isPaused ? "Unpause" : "Pause");
@@ -95,15 +155,22 @@ void DotsCanvas::pause()
 
 void DotsCanvas::cheat()
 {
-  if (timeLeft > 0) {
-    isPaused = !isPaused;
-    gameWidget->setPaused(isPaused);
-    pauseButton->setText(isPaused ? "Unpause" : "Pause");
+  if (cheats > 0) {
+    timeOrMovesLeft+=6;
+    decrementTimeOrMoves();
+    cheats--;
   }
 }
 
 void DotsCanvas::increaseScore(int value)
 {
+  if (!playingTimedGame) {
+    decrementTimeOrMoves();
+  }
+  if(score >= score_to_cheat){
+    cheats++;
+    score_to_cheat += 100;
+  }
   score += value;
   scoreLabel->setText(QString("Score: %1").arg(score));
 }
@@ -111,13 +178,22 @@ void DotsCanvas::increaseScore(int value)
 void DotsCanvas::timerTicked()
 {
   // this will get called every second
-  if(!isPaused && boardShowing && timeLeft > 0) {
-    timeLeft--;
-    timeLabel->setText(QString("Time Remaining: %1 seconds").arg(timeLeft));
-    if (timeLeft == 0) {
+  if(playingTimedGame && !isPaused && timeOrMovesLeft > 0) {
+    decrementTimeOrMoves();
+  }
+}
+
+void DotsCanvas::decrementTimeOrMoves()
+{
+    timeOrMovesLeft--;
+    timeOrMovesLabel->setText(QString("%1 Remaining: %2 %3")
+      .arg(playingTimedGame ? "Time" : "Moves")
+      .arg(timeOrMovesLeft)
+      .arg(playingTimedGame ? "seconds" : ""));
+    if (timeOrMovesLeft == 0) {
       gameWidget->reset();
       gameWidget->setPaused(true);
-      timeLabel->setText(QString("Game Over! Reset to try again."));
+      timeOrMovesLabel->setText(QString("Game Over! Reset to try again."));
     }
-  }
+
 }

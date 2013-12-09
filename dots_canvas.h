@@ -23,30 +23,39 @@ class DotsCanvas : public QWidget
 
  private slots:
   void timerTicked();
-  void selectPlay();
+  void selectPlayWithTime();
+  void selectPlayWithMoves();
+  void back();
   void reset();
   void pause();
   void cheat();
 
  private:
-  bool boardShowing;
+  void startGame();
+  void decrementTimeOrMoves();
+  bool playingTimedGame;
   bool isPaused;
   int score;
 
   QTimer* timer;
-  int timeLeft;
+  int timeOrMovesLeft;
 
   QGridLayout* layout;
   DotsGameWidget* gameWidget;
-  QPushButton* playButton;
+  QPushButton* playWithTimeButton;
+  QPushButton* playWithMovesButton;
+  QPushButton* backButton;
   QPushButton* pauseButton;
   QPushButton* cheatButton;
   QPushButton* resetButton;
   QLabel* scoreLabel;
-  QLabel* timeLabel;
+  QLabel* timeOrMovesLabel;
+  QLabel* infoLabel;
 
   static const int WIDTH = 400;
   static const int HEIGHT = 600;
+  int score_to_cheat;
+  int cheats;
 
 };
 
