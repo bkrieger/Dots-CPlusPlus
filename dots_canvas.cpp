@@ -56,8 +56,6 @@ DotsCanvas::DotsCanvas(QWidget* parent)
   pauseButton->hide();
   cheatButton->hide();
   resetButton->hide();
-
-  cheatButton->setEnabled(false);
 }
 
 void DotsCanvas::selectPlayWithTime()
@@ -132,6 +130,7 @@ void DotsCanvas::reset()
   score_to_cheat = 100;
   score = 0;
   cheats = 0;
+  cheatButton->setEnabled(false);
   isPaused = false;
   if (playingTimedGame) {
     timeOrMovesLeft = 60; //60seconds
@@ -158,6 +157,7 @@ void DotsCanvas::pause()
 void DotsCanvas::cheat()
 {
   if (cheats > 0 && timeOrMovesLeft > 0) {
+    // Add 6 seconds/moves that way we can call decrementTimeOrMoves, so we actually add 5.
     timeOrMovesLeft+=6;
     decrementTimeOrMoves();
     cheats--;
@@ -172,12 +172,12 @@ void DotsCanvas::increaseScore(int value)
   if (!playingTimedGame) {
     decrementTimeOrMoves();
   }
+  score += value;
   if(score >= score_to_cheat){
     cheats++;
     score_to_cheat += 100;
     cheatButton->setEnabled(true);
   }
-  score += value;
   scoreLabel->setText(QString("Score: %1").arg(score));
 }
 
